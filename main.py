@@ -1,19 +1,48 @@
-from turtle import Turtle, Screen
-import random
-
-t = Turtle()
-color = ["blue", "yellow", "purple", "green", "black", "red", "pink"]
-
-def draw_shape(num_sides):
-    angle = 360 / num_sides
-    for _ in range(num_sides):
-        t.forward(100)
-        t.right(angle)
-
-
-for i in range(3, 11):
-    draw_shape(i)
-    t.color(random.choice(color))
+from turtle import Screen
+from paddle import Paddle
+from ball import Ball
+from scoreboard import Scoreboard
+import time
 
 screen = Screen()
+screen.bgcolor("black")
+screen.setup(width=800, height=600)
+screen.title("Pong")
+screen.tracer(0)
+
+r_paddle = Paddle((350, 0))
+l_paddle = Paddle((-350, 0))
+ball = Ball()
+scoreboard = Scoreboard()
+
+screen.listen()
+screen.onkey(r_paddle.go_up, "Up")
+screen.onkey(r_paddle.go_down, "Down")
+screen.onkey(l_paddle.go_up, "w")
+screen.onkey(l_paddle.go_down, "s")
+
+game_is_on = True
+while game_is_on:
+    time.sleep(0.1)
+    screen.update()
+    ball.move()
+
+    # Detect collusion with ball
+    if ball.ycor() > 280 or ball.ycor() < -280:
+        ball.bounce_y()
+
+    # Detect collusion with r_paddle
+    if ball.distance(r_paddle) < 50 and ball.xcor() > 320 or ball.distance(l_paddle) < 50 and ball.xcor() < - 320:
+        ball.bounce_x()
+
+    # Detect if r_paddle missed the ball
+    if ball.xcor() > 380:
+        ball.reset_position()
+        scoreboard.l_point()
+
+    # Detect if l_paddle missed the ball
+    if ball.xcor() < -380:
+        ball.reset_position()
+        scoreboard.r_point()
+
 screen.exitonclick()
